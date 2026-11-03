@@ -7,18 +7,18 @@ import arxiv
 import chromadb
 import voyageai
 
-vo = voyageai.Client()  # reads VOYAGE_API_KEY
+vo = voyageai.Client()
 db = chromadb.PersistentClient(path="./astro_db")
 col = db.get_or_create_collection("astro", metadata={"hnsw:space": "cosine"})
 
 def base_id(result):
-    # strip version suffix so v1/v2 of a paper don't duplicate
+
     return re.sub(r"v\d+$", "", result.get_short_id())
 
 def flush(batch):
     texts = [f"{r.title}. {r.summary}" for r in batch]
     emb = vo.embed(texts, model="voyage-3.5", input_type="document").embeddings
-    col.upsert(  # upsert makes re-running safe
+    col.upsert(
         ids=[base_id(r) for r in batch],
         embeddings=emb,
         documents=texts,
@@ -26,6 +26,7 @@ def flush(batch):
             "title": r.title,
             "url": r.entry_id,
             "published": r.published.strftime("%Y-%m-%d"),
+            "published_int": int(r.published.strftime("%Y%m%d")),
             "category": r.primary_category,
             "authors": ", ".join(a.name for a in r.authors[:5]),
         } for r in batch],
@@ -41,7 +42,7 @@ search = arxiv.Search(
 batch = []
 for r in client.results(search):
     batch.append(r)
-    if len(batch) == 100:   # stays under Voyage's per-request limit
+    if len(batch) == 100:
         flush(batch)
         batch = []
         print("indexed 100 more")
