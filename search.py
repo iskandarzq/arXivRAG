@@ -1,5 +1,6 @@
 from pathlib import Path
 from dotenv import load_dotenv
+from datetime import datetime
 load_dotenv(Path(__file__).parent / ".env")
 
 import sys
@@ -14,11 +15,14 @@ col = chromadb.PersistentClient(path="./astro_db").get_collection("astro")
 def retrieve(query, k=8, category=None, since=None):
 
     where = {}
+    
     if category:
         where["category"] = category
     
     if since:
-        where["published"] = {"$gte: since"}
+        since = datetime.strptime(since_dt, "%Y-%m-%d")
+        since_date = strftime("%Y%m%d")
+        where["published_int"] = {"$gte": int(since_date)}
 
     q = vo.embed([query], model="voyage-3.5", input_type="query").embeddings
     return col.query(
