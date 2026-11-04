@@ -50,26 +50,6 @@ def retrieve(query, k=8, category=None, since=None):
         where = where_filter,
     )
 
-#def answer(query, **filters):
-    #res = retrieve(query, **filters)
-    #docs, metas = res["documents"][0], res["metadatas"][0]
-    #context = "\n\n".join(
-        #f"[{i+1}] {m['title']} ({m['published']}, {m['category']})\n{d}"
-        #for i, (d,m) in enumerate(zip(docs, metas))
-    #)
-    #msg = llm.messages.create(
-        #model= "claude-sonnet-5-5",
-        #max_tokens=1000,
-        #messages=[{"role": "user", "content": (
-            #"Answer using only the arXiv abstracts below. Cite with [n]. "
-            #"If they don't cover the question, say so. \n\n"
-            #f"{context}\n\nQuestion: {query}"
-        #)}],
-    #)
-
-    #sources = "\n".join(f"[{i+1}] {m['title']} - {m['url']}" for i, m in enumerate(metas))
-    #return msg.content[0].text + "\n\nSources:\n" + sources
-
 def show_results(query, **filters):
     res = retrieve(query, **filters)
     for i, (d, m, dist) in enumerate(zip(res["documents"][0], res["metadatas"][0], res["distances"][0])):
@@ -103,6 +83,3 @@ if __name__ == "__main__":
         show_results(" ".join(args[1:]))
     else:
         print(answer(" ".join(args)))#
-
-#if __name__ == "__main__":
-    #print(answer(" ".join(sys.argv[1:])))
